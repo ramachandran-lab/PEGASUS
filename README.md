@@ -5,9 +5,17 @@ Priyanka Nakka, Ramachandran Lab, Brown University
 
 June 23, 2016
 
-Code is modified from VEGAS source code; reference files are from the VEGAS program (Liu et al AJHG 2010) 
+Code is modified from VEGAS source code (Liu et al AJHG 2010) 
 
 Questions: Contact priyanka_nakka@brown.edu 
+
+Requirements:
+
+Perl 5
+
+R (version 3.0.2 or higher)
+
+Plink 1.07 (1.9 beta 3, 7 Jun is also okay) 
 
 Please note the following:
 1. R and PLINK must be installed and in your PATH for this program to run. 
