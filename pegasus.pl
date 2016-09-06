@@ -432,8 +432,10 @@ if (empp[1] < 0) {
 snpp <- pchisq(max(ass),1,lower.tail=F)
 snpname <- gene[which(ass==max(ass)),1][1]
 
-write.table(data.frame('$chr','$gene',numsnps,unique(gene[4]),unique(gene[5]),sumass,empp,snpname,snpp),'alwayswritep',row.names=F,col.names=F, quote = F)
+#write.table(data.frame('$chr','$gene',numsnps,unique(gene[4]),unique(gene[5]),sumass,empp,snpname,snpp)#,'alwayswritep',row.names=F,col.names=F, quote = F)
 
+write.table(data.frame('$chr','$gene',numsnps,gene[1,4],gene[1,5],sumass,empp,snpname,snpp),'alwayswritep',row.names=F,col.names=F, quote = F)
+#print(data.frame('$chr','$gene',numsnps,gene[1,4],gene[1,5],sumass,empp,snpname,snpp))
 EOF
 ");
 		open(CORRECTEDP, "alwayswritep");
@@ -601,6 +603,7 @@ sub ldfiletest{ # using custom LD file - default
 		system("awk '\$1==$chr {print \$0}' $ldfile > temptempld"); ## subset ld file by chromosome
 
 		foreach $gene (@allgenes){
+			#print "$gene";
 
 			if(-e "tempgene.pvalue"){system("rm tempgene.pvalue");}
 			if(-e "gene.position"){system("rm gene.position");}
@@ -610,6 +613,7 @@ sub ldfiletest{ # using custom LD file - default
 			chomp($gene);
 			@items = split(/\s+/,$gene);
 			$gene = $items[3];
+			#print "$gene"; 
 			#system("grep -w \"$gene\" ../glist-hg18 > gene.position");
 			system("grep -w \"$gene\" ../glist-hg19 > gene.position");
 			@glistpos = grep(/\b$gene\b/, @hglist);	
@@ -629,6 +633,7 @@ sub ldfiletest{ # using custom LD file - default
 				$stop = @glistpos[2]+$upper;
 			}
 			## find all snps within gene using temptempld file only
+			#print "$gene"; 
 			system("
 
 R --vanilla --slave  <<EOF
@@ -645,7 +650,7 @@ if (nrow(ld) >=1) {
 	snps = unique(c(ld[,3], ld[,6]))
 	temppvals = read.table('temppvals', header = F, colClasses = c('character', 'numeric'))
 	snpps = temppvals[which(temppvals[,1] %in% snps),]
-	snps <- snpps[,1]
+	#snps <- snpps[,1]
 	if (nrow(snpps)==1) {
 		write.table(snpps, 'tempgene.pvalue', row.names=F,col.names=F, quote = F)
 		system('echo 1 > ld.ld')
@@ -653,7 +658,9 @@ if (nrow(ld) >=1) {
 	if (nrow(snpps) > 1) {
 		write.table(snpps, 'tempgene.pvalue', row.names=F,col.names=F, quote = F)
 		ld = ld[,c(3,6,7)]
-		dummy = as.data.frame(cbind(snpps[,1], snpps[,1], rep(1.0, nrow(snpps))))
+		#list = unique(c(ld$SNP_A, ld$SNP_B))
+		#dummy = as.data.frame(cbind(snpps[,1], snpps[,1], rep(1.0, nrow(snpps))))
+		dummy = as.data.frame(cbind(snps, snps, rep(1.0, length(snps))))
 		names(dummy)<- names(ld)
 		ld = rbind(ld, dummy)
 		ldmat = reshape(ld, direction='wide', timevar = 'SNP_B', idvar = 'SNP_A')
@@ -664,6 +671,7 @@ if (nrow(ld) >=1) {
 		ldmat[is.na(ldmat)] <- 0.0
 		ldmat[ldmat == 'NaN'] <- 0.0
 		ldmat = apply(ldmat, 1, as.numeric)
+		#print(dim(ldmat))
 		if (isSymmetric(unname(as.matrix(ldmat))) == FALSE) {
   			ldmat = ldmat+ t(ldmat)
   			diag(ldmat) <- 1.0
@@ -673,7 +681,7 @@ if (nrow(ld) >=1) {
 }
 EOF
 ");
-
+			#if ($gene=='ARID5B') {die;}
 			if (-e "tempgene.pvalue"){
 				if (-e "ld.ld") {
 					&maketempgener;
@@ -681,6 +689,7 @@ EOF
 				}
 			}
 			else {next;}
+			
 		}
 	}
 }
@@ -704,6 +713,7 @@ sub doldchr{ # using custom LD file - for one chromosome
 		system("awk '\$1==$chr {print \$0}' $ldfile > temptempld"); ## subset ld file by chromosome
 
 		foreach $gene (@allgenes){
+			#print "$gene"; 
 			if(-e "tempgene.pvalue"){system("rm tempgene.pvalue");}
 			if(-e "gene.position"){system("rm gene.position");}
 			if(-e "templd"){system("rm templd");}
@@ -747,7 +757,7 @@ if (nrow(ld) >=1) {
 	snps = unique(c(ld[,3], ld[,6]))
 	temppvals = read.table('temppvals', header = F, colClasses = c('character', 'numeric'))
 	snpps = temppvals[which(temppvals[,1] %in% snps),]
-	snps <- snpps[,1]
+	#snps <- snpps[,1]
 	if (nrow(snpps)==1) {
 		write.table(snpps, 'tempgene.pvalue', row.names=F,col.names=F, quote = F)
 		system('echo 1 > ld.ld')
@@ -755,7 +765,9 @@ if (nrow(ld) >=1) {
 	if (nrow(snpps) > 1) {
 		write.table(snpps, 'tempgene.pvalue', row.names=F,col.names=F, quote = F)
 		ld = ld[,c(3,6,7)]
-		dummy = as.data.frame(cbind(snpps[,1], snpps[,1], rep(1.0, nrow(snpps))))
+		#list = unique(c(ld$SNP_A, ld$SNP_B))
+		#dummy = as.data.frame(cbind(snpps[,1], snpps[,1], rep(1.0, nrow(snpps))))
+		dummy = as.data.frame(cbind(snps, snps, rep(1.0, length(snps))))
 		names(dummy)<- names(ld)
 		ld = rbind(ld, dummy)
 		ldmat = reshape(ld, direction='wide', timevar = 'SNP_B', idvar = 'SNP_A')
@@ -763,10 +775,10 @@ if (nrow(ld) >=1) {
 		rownames(ldmat) = ldmat[,1]
 		ldmat = ldmat[,-1]
 		ldmat = ldmat[,order(match(names(ldmat), paste('R.', snpps[,1], sep = '')))]# change column order to make (upper) triangular matrix
-		
 		ldmat[is.na(ldmat)] <- 0.0
 		ldmat[ldmat == 'NaN'] <- 0.0
 		ldmat = apply(ldmat, 1, as.numeric)
+		#print(dim(ldmat))
 		if (isSymmetric(unname(as.matrix(ldmat))) == FALSE) {
   			ldmat = ldmat+ t(ldmat)
   			diag(ldmat) <- 1.0
